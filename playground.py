@@ -1,4 +1,5 @@
 from dynamics_engine import DynamicsEngine
+import numpy as np
 
 
 """
@@ -19,17 +20,27 @@ Basically:
 """
 
 
-f = lambda t, y: -2*y #& y -> y(t) = this one WORKS (basic decay DE)
+f = lambda t, y: -.2*y #& y -> y(t) = this one WORKS (basic decay DE)
 g = lambda t, y: y*(1-(y/10)) #basic (LOGISTIC ODE)
-k = lambda t, y: y*(1-y/100) #random eqn
+k = lambda t, y: y*(y**2-y/100) #random eqn
+sinusoidal = lambda t, y: np.sin(y) + np.cos(y)
+harder_eqn = lambda t, y: -1000*(y-np.cos(t)) - np.sin(t)
+gauss_pulse = lambda t, y: -y + 5000*np.exp(-200*(t-2)**2)
 
-f_engine = DynamicsEngine(f, dt=0.1)
+f_engine = DynamicsEngine(f, dt=0.001)
 g_engine = DynamicsEngine(g, dt=.01)
 k_engine = DynamicsEngine(k, dt=.0001)
+sinusoidal_engine = DynamicsEngine(sinusoidal, dt=.001)
+harder_eqn_engine = DynamicsEngine(harder_eqn, dt=.1)
+gauss_pulse_engine = DynamicsEngine(gauss_pulse, dt=.01)
 
-#f_engine.get_response(initial_conditions=[0, 1], duration=10, return_as='plot')
+
+#f_engine.get_response(initial_conditions=[0, 25], duration=5, return_as='plot')
 #g_engine.get_response(initial_conditions=[0, 1], duration=20, return_as='plot')
-k_engine.get_response(initial_conditions=[0, 1], duration=5, return_as='plot')
+#k_engine.get_response(initial_conditions=[10, 12], duration=5, return_as='plot')
+#sinusoidal_engine.get_response(initial_conditions=[0, np.pi/2], duration=5, return_as='plot')
+harder_eqn_engine.get_response(initial_conditions=[0, 1], duration=10, return_as='plot', tolerance=.1)
+gauss_pulse_engine.get_response(initial_conditions=[0, 0], duration=15, return_as='plot', tolerance=.1)
 
 #FOUND A SUPER SILLY ERROR: If my inital conditions are 0,0 then x=0 and 1/x^2 = 0...
 #Must be able to handle singularities

@@ -1,0 +1,14 @@
+Things to Implement Soom:
+☐ Handle Errors for incorrect/singular/etc... diff eqs (user feedback) - less Mathy
+☐ Allow return_as='slope_field' for nice visualizations
+☐ Allow for nth order equations (can't handle vector initial conditions yet) 
+☐ Fix s-plotting (step size factor) as it is a useful math insight 
+
+Future Works:
+☐ Create a Nice UI using React
+☐ Connect React frontend with python backedn using FastAPI & Json
+
+--> remember, to implement titles use : at the end of the title!
+
+Ideas: 
+☐ Create a 'run until convergence' where DE either runs until it times out or unter there is convergence to a single value

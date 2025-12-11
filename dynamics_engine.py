@@ -17,28 +17,28 @@ class DynamicsEngine:
         self.f = f
         self.dt = dt
 
-    def get_response(self, initial_conditions=[0,0], duration=10, return_as='raw', tolerance=5) -> np.array:
+    def get_response(self, initial_conditions=[0,1], duration=10, return_as='raw', tolerance=5) -> np.array:
         """
         READ ME!
 
         Simulate the response of the system for a specified time duration
         
         parameters: 
-        - initial_coditions: float array, [t0, x0]. Defaults to [0,0]
+        - initial_coditions: float array, [t0, x0]. Defaults to [0,1]
         - duration: integer, simulation duration in seconds. Defaults to 10s
         - return_as: 'raw', 'plot' or 'interpolated' (default: 'raw')
             - raw returns a 2D np array with x-points and t-points
             - plot plots the response using matplotlib. No return.
             - interpolated returns an akima1D object for response interpolation
                 - Akima object can be plotted using matplotlib directly due to its built-in __call__(x) method (will call interpolated output for every input x) 
-            - tolerance: float, error tolerance for adaptive step sizing (default: 1e-6)
+        - tolerance: float, error tolerance for adaptive step sizing (default: 1e-6)
 
         return: depents on return_as arg. Can be None.
         """
 
         # Use differential equation! Can be ANY standard form ODE: dx/dt = f(x, t)
 
-        # catch errors better; no initial condition => RKF45 will not work
+        ##ERROR HANDLING ------------------------------------------
 
         """"
         try: #catch errors if function is not callable object 
@@ -47,6 +47,11 @@ class DynamicsEngine:
             raise ValueError("The function provided is not callable. Please provide a valid function f(x, t).") from e
         """
 
+        ##mMAKE MY OWN RKF45 so I can finally understand how it works    
+        ## Things to learn: f(t, y) returns a SLOPE at any point. Thus we can multiply by h or 1/2 h to get different solutions (slopes can be thought of as unit vectors, h is just length)
+
+        ##INITIAL CONDITIONS ----------------------------------------
+         
         #extract initial & final conditions: 
         t_0 = initial_conditions[0]
         t_end = duration
@@ -56,18 +61,6 @@ class DynamicsEngine:
         y_pts = []
         s_factors = [1] #keep track to visualize later on. S here is INITIAL!
         
-        ##define some repeatable LOCAL functions
-
-
-        ##mMAKE MY OWN RKF45 so I can finally understand how it works    
-        ## Things to learn: f(t, y) returns a SLOPE at any point. Thus we can multiply by h or 1/2 h to get different solutions (slopes can be thought of as unit vectors, h is just length)
-
-        #first get number of necessary steps to satisfy duration with dt (boundary contidion)
-        #generate linearly spaced time points from 0 to duration with step dt
-
-        ##INITIAL CONDITIONS ----------------------------------------
-
-        #ONE DAY I could try to implement a 'run until convergence or divergence' method, but for now just do fixed duration
 
         num_pts = int((t_end - t_0) / self.dt) + 1 #+1 to include endpoint
         time_steps = np.linspace(t_0,t_end,num_pts) #need to include num_pts casted to int 
@@ -103,11 +96,15 @@ class DynamicsEngine:
                 y_new = y_k + (25/216)*k1 + (1408/2565)*k3 + (2197/4104)*k4 - (1/5)*k5
                 z_new = y_k + (16/135)*k1 + (6656/12825)*k3 + (28561/56430)*k4 - (9/50)*k5 + (2/55)*k6
 
+
                 #recalculate error to ensure it's within tolerance
                 #print(f'vals y:{y_new}, z: {z_new}')
                 e_k = np.abs(z_new - y_new)
                 e_cache.append(e_k)
                 #print(f'\nerror {e_k}')
+
+                #MUST CATCH ERRORS FROM ERROR!!!
+
 
                 print(f'\ne_prev: {e_cache[0]} | \te_curr: {e_cache[1]} | \tdiff: {(np.abs(e_cache[0]-e_cache[1])/e_cache[1])} | \ttol: {tolerance}' )
                 
