@@ -19,11 +19,17 @@ Basically:
 """
 
 
-f = lambda t, y: -2*(1/(y**(2))) + 1 #& y -> y(t)
+f = lambda t, y: -2*y #& y -> y(t) = this one WORKS (basic decay DE)
+g = lambda t, y: y*(1-(y/10)) #basic (LOGISTIC ODE)
+k = lambda t, y: y*(1-y/100) #random eqn
 
-engine = DynamicsEngine(f, dt=0.1)
+f_engine = DynamicsEngine(f, dt=0.1)
+g_engine = DynamicsEngine(g, dt=.01)
+k_engine = DynamicsEngine(k, dt=.0001)
 
-engine.get_response(initial_conditions=[0, 1], duration=10, return_as='plot')
+#f_engine.get_response(initial_conditions=[0, 1], duration=10, return_as='plot')
+#g_engine.get_response(initial_conditions=[0, 1], duration=20, return_as='plot')
+k_engine.get_response(initial_conditions=[0, 1], duration=5, return_as='plot')
 
 #FOUND A SUPER SILLY ERROR: If my inital conditions are 0,0 then x=0 and 1/x^2 = 0...
 #Must be able to handle singularities
