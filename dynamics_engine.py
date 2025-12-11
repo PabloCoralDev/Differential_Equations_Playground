@@ -42,21 +42,9 @@ class DynamicsEngine:
         except Exception as e: #exception is a keyword
             raise ValueError("The function provided is not callable. Please provide a valid function f(x, t).") from e
         
+        ## Code my own RK4 or maybe even a more advanced plotting method.--> MAKE MY OWN RKF45 so I can finally understand how it works    
+
         if return_as == 'plot':
-            t_points = np.arange(initial_conditions[0], initial_conditions[0] + duration, self.dt)
-            x_points = np.zeros_like(t_points)
-            x_points[0] = initial_conditions[1]
-
-            for i in range(1, len(t_points)):
-                t = t_points[i-1]
-                x = x_points[i-1]
-
-                k1 = self.f(x, t)
-                k2 = self.f(x + 0.5 * self.dt * k1, t + 0.5 * self.dt)
-                k3 = self.f(x + 0.5 * self.dt * k2, t + 0.5 * self.dt)
-                k4 = self.f(x + self.dt * k3, t + self.dt)
-
-                x_points[i] = x + (self.dt / 6) * (k1 + 2*k2 + 2*k3 + k4)
 
             plt.plot(t_points, x_points)
             plt.xlabel('Time')
