@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 
 
 class DynamicsEngine:
-    """A simple dynamics engine to simulate standard form ODEs using RK4, self-programmed
-    for refreshing knowledge on numerical integration methods.
+    """A simple dynamics engine to simulate standard form ODEs using RK4(5), self-programmed
+    for refreshing knowledge on numerical integration methods. Purposefully using NO GenAI or claude agent to keep brain sharp.
     """
     def __init__(self, f, dt):
         """
@@ -26,11 +26,12 @@ class DynamicsEngine:
         parameters: 
         - initial_coditions: float array, [t0, x0]. Defaults to [0,1]
         - duration: integer, simulation duration in seconds. Defaults to 10s
-        - return_as: 'raw', 'plot' or 'interpolated' (default: 'raw')
+        - return_as: 'raw', 'plot', 'vector_field', 'interpolated' (default: 'raw')
             - raw returns a 2D np array with x-points and t-points
             - plot plots the response using matplotlib. No return.
+            - vector field returns a vector field of eqn (slope field with unit length)
             - interpolated returns an akima1D object for response interpolation
-                - Akima object can be plotted using matplotlib directly due to its built-in __call__(x) method (will call interpolated output for every input x) 
+                - Akima object can be plotted using matplotlib directly due to its built-in __call__(x) method (will call interpolated output for every input x)
         - tolerance: float, error tolerance for adaptive step sizing (default: 1e-6)
 
         return: depents on return_as arg. Can be None.
@@ -40,12 +41,47 @@ class DynamicsEngine:
 
         ##ERROR HANDLING ------------------------------------------
 
-        """"
-        try: #catch errors if function is not callable object 
-            self.f(initial_conditions[0], initial_conditions[1])
-        except Exception as e: #exception is a keyword
-            raise ValueError("The function provided is not callable. Please provide a valid function f(x, t).") from e
-        """
+        #1. self.f must be callable
+        #2. differential equation must not be singular for the given IC's    
+
+        ##LOCAL FUNCTIONS -----------------------------------------
+
+        def plot_response(s_factors, t_pts, y_pts):
+
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+            # Left plot: System Response
+            ax1.plot(t_pts, y_pts, color='#2E86AB', linewidth=2, label='y(t)')
+            ax1.set_xlabel('Time (s)', fontsize=11, fontweight='bold')
+            ax1.set_ylabel('Response', fontsize=11, fontweight='bold')
+            ax1.set_title('System Response Over Time', fontsize=12, fontweight='bold', pad=15)
+            ax1.grid(True, alpha=0.3, linestyle='--', linewidth=0.8)
+            ax1.legend(loc='best', framealpha=0.9)
+
+            # Right plot: Adaptive Step Size Factors
+            step_indices = np.arange(len(s_factors))
+            ax2.plot(step_indices, s_factors, color='#A23B72', linewidth=2, marker='o',
+                     markersize=3, alpha=0.8, label='Step Size Factor')
+            ax2.axhline(y=1.0, color='#F18F01', linestyle='--', linewidth=1.5,
+                        alpha=0.7, label='Baseline (s=1)')
+            ax2.set_xlabel('Iteration', fontsize=11, fontweight='bold')
+            ax2.set_ylabel('Scaling Factor (s)', fontsize=11, fontweight='bold')
+            ax2.set_title('Adaptive Step Size Evolution', fontsize=12, fontweight='bold', pad=15)
+            ax2.grid(True, alpha=0.3, linestyle='--', linewidth=0.8)
+            ax2.legend(loc='best', framealpha=0.9)
+
+            plt.suptitle('RKF45 Dynamics Engine Simulation', fontsize=14, fontweight='bold', y=1.00)
+            plt.show()
+            return None
+        
+        def plot_vector_field():
+            """
+            Plots vector field of the thing. Complicated now that I think about it...
+            """
+            #create a grid with x by x points
+            #evaluate RKF4(5) at higher and higher IC's to find the value at every point on the field
+            #visualize as arrows (?)
+            pass
 
         ##mMAKE MY OWN RKF45 so I can finally understand how it works    
         ## Things to learn: f(t, y) returns a SLOPE at any point. Thus we can multiply by h or 1/2 h to get different solutions (slopes can be thought of as unit vectors, h is just length)
@@ -103,11 +139,10 @@ class DynamicsEngine:
                 e_cache.append(e_k)
                 #print(f'\nerror {e_k}')
 
-                #MUST CATCH ERRORS FROM ERROR!!!
+                #MUST CATCH ERRORS FROM INCORRECT INPUT
 
-
-                print(f'\ne_prev: {e_cache[0]} | \te_curr: {e_cache[1]} | \tdiff: {(np.abs(e_cache[0]-e_cache[1])/e_cache[1])} | \ttol: {tolerance}' )
-                
+                #print(f'\ne_prev: {e_cache[0]} | \te_curr: {e_cache[1]} | \tdiff: {(np.abs(e_cache[0]-e_cache[1])/e_cache[1])} | \ttol: {tolerance}' )
+            
 
                 # OR if error converges is another case ; I should cache the error 
                 # Apparently, relative error is STANDARD and goes alongisde the absolute error
@@ -127,31 +162,23 @@ class DynamicsEngine:
 
                 #compare errors --> percent diff formula is (|curr-prev|/prev) -> denom is largest, which should be prev (prev is reference)
                 #if no value is the reference, denominator becomes average (this is percent DIFFERENCE, not error) --> |curr-prev|/(|curr+prev|/2)
-                else: 
-                    s = 0.84 * (tolerance / e_k)**0.25 #formula for s given by Numerical Methods using MATLAB, 4th edition, Jaan Kiusalaas
-                    s_factors.append(s)
+                
+                s = 0.84 * (tolerance / e_k)**0.25 #formula for s given by Numerical Methods using MATLAB, 4th edition, Jaan Kiusalaas
+                s_factors.append(s)
 
                 # if we did NOT exit the loop, I must adjust the cached errors before proceeding to the next run:
                 e_cache.pop(0) #pop SHIFTS INDICES, which is what I want (leave only the current error.)
-                # may have to do some sort of time-out in case tolerance is never met
-                #if error is less than tolerance, loop will break naturally
-                #if error is still greater than tolerance, step size needs to be recalculated
-                  
 
+                #MUST MAKE A TIME-OUT FEATURE if tolerance is not met in max iters
+
+                print(f'length: {len(s_factors)}')
+                
 
             #program does NOT 'continue' if error is exceeded (step has to be adaptive from the beginning) 
             ## y_new is a 4th order estimate (up to k5), z_new is a 5th order estimate (up to k6). We can compare them to determine the next best step size
 
-        if return_as == 'plot':
-
-            plt.plot(t_pts, y_pts)
-            plt.xlabel('Time')
-            plt.ylabel('Response')
-            plt.title('System Response Over Time')
-            plt.grid()
-            #plt.plot(t_pts, s_factors)
-            plt.show()
-            return None
+        if return_as == 'plot': plot_response(s_factors=s_factors, t_pts=t_pts, y_pts=y_pts)
+        elif return_as == 'vector_field': plot_vector_field()
         
 
         ## maybe one day I can implement this on vercel for a cool tool --> soon    

@@ -1,7 +1,7 @@
 Things to Implement Soom:
 ☐ Handle Errors for incorrect/singular/etc... diff eqs (user feedback) - less Mathy
 ☐ Allow return_as='slope_field' for nice visualizations
-☐ Allow for nth order equations (can't handle vector initial conditions yet) 
+☐ Allow for nth order equations (can't handle vector initial conditions yet) --> multistate equations
 ☐ Fix s-plotting (step size factor) as it is a useful math insight 
 
 Future Works:
