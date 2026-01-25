@@ -77,7 +77,57 @@ class DynamicsEngine:
         def plot_vector_field():
             """
             Plots vector field of the thing. Complicated now that I think about it...
+
+            Main idea: evaluate the derivative at every point
+            Main issue: I do not know the value of y(t) at every point, but derivative f(t, y) --> f(y)
+
+            Possible solutions:
+            1. Have to plot all possible paths thru a grid, ignore paths that go outside of grid and keep 'filling grid' systematically
+                main issue: may be hard to capture behavior of de (i.e, expo growth) if capture size is small
+                - DE goes up iteratively until limit of window is hit
+                - can assume continuos so: 
+                    - if limit is hit 'too fast' (vertical limit hit bc of fast horziontal dynamics) reduce initial conditions, even beyond limit
+                        - negative 'alternator' if this happens up or down
+                    - if limit is hit too slow (i.e, same vertical val from start to end), increase initial conditions
+
+
+                    for now, make size proportional to slope?
+            
             """
+            m1 = 2500
+            m2 = 6
+            m3 = 17
+
+            plotterDt = 0.001
+            basePt = 1
+            baseVert = 2
+
+            m = m1
+
+            newBaseVert = lambda x: m*x + (-m*basePt + baseVert) 
+
+            plt.scatter([basePt], [2], s=m1)
+
+            for i in range(0, 100):
+
+                #need to get slope and make a function around the point (simple linear TSA)
+
+                """
+                y - y1 = m(x-x1) 
+                y = mx - mx1 + y1 
+                => b = -mx1 + y1 
+    
+                """
+                newBasePt = basePt+plotterDt
+                plt.scatter([newBasePt], [newBaseVert(newBasePt)], s=m1, c=[0,0,0])
+                basePt=newBasePt
+
+            plt.scatter([2] ,[2], s=m2)
+            plt.scatter([3], [2], s=m3)
+            plt.show()
+        
+
+
             #create a grid with x by x points
             #evaluate RKF4(5) at higher and higher IC's to find the value at every point on the field
             #visualize as arrows (?)
